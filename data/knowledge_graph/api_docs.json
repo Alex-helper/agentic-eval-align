@@ -1,0 +1,39 @@
+{
+  "nodes": [
+    {
+      "id": "auth_api",
+      "title": "Auth API",
+      "content": "Token refresh requires calling POST /auth/refresh before expired_at. Retry once on 401.",
+      "tags": ["auth", "token", "refresh"]
+    },
+    {
+      "id": "billing_api",
+      "title": "Billing API",
+      "content": "Invoice total equals subtotal plus tax minus credits. Tax rate for sandbox region is 8%.",
+      "tags": ["billing", "invoice", "calculator"]
+    },
+    {
+      "id": "search_api",
+      "title": "Search API",
+      "content": "Search endpoint supports filters: status, owner, created_after. Results are paginated.",
+      "tags": ["search", "filter", "pagination"]
+    },
+    {
+      "id": "workflow_api",
+      "title": "Workflow API",
+      "content": "Long running jobs move through queued, running, blocked, completed, failed states.",
+      "tags": ["workflow", "state", "agent"]
+    },
+    {
+      "id": "risk_api",
+      "title": "Risk API",
+      "content": "Risk score above 0.75 requires manual_review=true and explanatory evidence.",
+      "tags": ["risk", "threshold", "review"]
+    }
+  ],
+  "edges": [
+    {"source": "auth_api", "target": "workflow_api", "relation": "protects"},
+    {"source": "billing_api", "target": "risk_api", "relation": "feeds"},
+    {"source": "search_api", "target": "workflow_api", "relation": "queries"}
+  ]
+}
