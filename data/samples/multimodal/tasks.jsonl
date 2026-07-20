@@ -1,0 +1,2 @@
+﻿{"task_id":"jsonl_risk","instruction":"Risk score 0.82 needs manual review?","tools":["search_docs","calculator"],"expected":{"keyword":"risk","expression":"0.82-0.75"},"difficulty":"medium"}
+{"task_id":"jsonl_workflow","instruction":"Keep workflow state across queued running blocked completed","tools":["search_docs"],"expected":{"keyword":"workflow"},"difficulty":"hard"}
