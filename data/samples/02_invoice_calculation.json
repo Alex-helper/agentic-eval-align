@@ -1,0 +1,7 @@
+{
+  "task_id": "sample_invoice_calculation",
+  "instruction": "Compute sandbox invoice total for subtotal 120 and credits 10, using the documented tax rule.",
+  "tools": ["search_docs", "calculator"],
+  "expected": {"keyword": "billing", "requires_knowledge": true, "expression": "120 * 1.08 - 10"},
+  "difficulty": "easy"
+}
