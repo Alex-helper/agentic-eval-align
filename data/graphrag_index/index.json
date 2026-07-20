@@ -1,0 +1,46 @@
+{
+  "nodes": [
+    {
+      "id": "auth_api",
+      "title": "Auth API",
+      "content": "Token refresh requires calling POST /auth/refresh before expired_at. Retry once on 401.",
+      "tags": ["auth", "token", "refresh"],
+      "community": "identity"
+    },
+    {
+      "id": "billing_api",
+      "title": "Billing API",
+      "content": "Invoice total equals subtotal plus tax minus credits. Tax rate for sandbox region is 8%.",
+      "tags": ["billing", "invoice", "calculator"],
+      "community": "finance"
+    },
+    {
+      "id": "search_api",
+      "title": "Search API",
+      "content": "Search endpoint supports filters: status, owner, created_after. Results are paginated.",
+      "tags": ["search", "filter", "pagination"],
+      "community": "retrieval"
+    },
+    {
+      "id": "workflow_api",
+      "title": "Workflow API",
+      "content": "Long running jobs move through queued, running, blocked, completed, failed states.",
+      "tags": ["workflow", "state", "agent"],
+      "community": "orchestration"
+    },
+    {
+      "id": "risk_api",
+      "title": "Risk API",
+      "content": "Risk score above 0.75 requires manual_review=true and explanatory evidence.",
+      "tags": ["risk", "threshold", "review"],
+      "community": "governance"
+    }
+  ],
+  "communities": [
+    {"name": "identity", "summary": "Authentication and retry constraints for tool workflows."},
+    {"name": "finance", "summary": "Invoice calculation and numeric verification rules."},
+    {"name": "retrieval", "summary": "Search and pagination rules for evidence lookup."},
+    {"name": "orchestration", "summary": "State-machine constraints for long-running Agent jobs."},
+    {"name": "governance", "summary": "Risk thresholds and review requirements."}
+  ]
+}
