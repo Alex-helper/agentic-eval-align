@@ -1,0 +1,7 @@
+{
+  "task_id": "sample_auth_recovery",
+  "instruction": "Evaluate whether an agent can recover from an expired token by consulting API docs and selecting the correct retry action.",
+  "tools": ["search_docs"],
+  "expected": {"keyword": "auth", "requires_knowledge": true},
+  "difficulty": "medium"
+}
