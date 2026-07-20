@@ -1,0 +1,7 @@
+{
+  "task_id": "sample_search_filter",
+  "instruction": "Find the correct search filters for active workflows owned by alice after 2026-01-01.",
+  "tools": ["search_docs"],
+  "expected": {"keyword": "search", "requires_knowledge": true},
+  "difficulty": "medium"
+}
