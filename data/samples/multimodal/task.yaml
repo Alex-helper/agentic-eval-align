@@ -1,0 +1,7 @@
+﻿- task_id: yaml_search
+  instruction: Find search filters for active workflows
+  tools: [search_docs]
+  expected:
+    keyword: search
+    requires_knowledge: true
+  difficulty: medium
