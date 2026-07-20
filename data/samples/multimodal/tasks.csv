@@ -1,0 +1,3 @@
+﻿task_id,instruction,tools,expected,difficulty
+csv_auth,"Evaluate token refresh recovery using Auth API docs",search_docs,"{""keyword"":""auth"",""requires_knowledge"":true}",medium
+csv_bill,"Compute invoice total with tax",search_docs;calculator,"{""keyword"":""billing"",""expression"":""100*1.08""}",easy
