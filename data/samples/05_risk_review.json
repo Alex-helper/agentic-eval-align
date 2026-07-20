@@ -1,0 +1,7 @@
+{
+  "task_id": "sample_risk_review",
+  "instruction": "Decide whether a risk score of 0.82 requires manual review and evidence in the final answer.",
+  "tools": ["search_docs", "calculator"],
+  "expected": {"keyword": "risk", "requires_knowledge": true, "expression": "0.82 - 0.75"},
+  "difficulty": "medium"
+}
