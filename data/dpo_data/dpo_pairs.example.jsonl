@@ -1,0 +1,1 @@
+{"prompt":"Example failed Agent task","chosen":"Retrieve knowledge, call declared tool, validate arguments, then answer in expected format.","rejected":"Skipped retrieval and guessed the answer.","source_trace_id":"example","error_type":"knowledge_miss"}
