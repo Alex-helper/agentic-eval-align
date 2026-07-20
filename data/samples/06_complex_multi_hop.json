@@ -1,0 +1,13 @@
+{
+  "task_id": "sample_complex_multi_hop",
+  "instruction": "复杂多跳任务：1) 查询 Auth API 的 token 刷新规则；2) 查询 Billing API 税率；3) 计算 subtotal=250、credits=20 的 invoice total；4) 若 risk score=0.82，判断是否需要 manual_review，并给出完整执行计划与最终结论。",
+  "tools": ["search_docs", "calculator"],
+  "expected": {
+    "keyword": "billing",
+    "requires_knowledge": true,
+    "expression": "250 * 1.08 - 20"
+  },
+  "difficulty": "hard",
+  "modalities": ["text"],
+  "source_format": "json"
+}
