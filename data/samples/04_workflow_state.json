@@ -1,0 +1,7 @@
+{
+  "task_id": "sample_workflow_state",
+  "instruction": "Assess whether the agent keeps job state across queued, running, blocked and completed transitions.",
+  "tools": ["search_docs"],
+  "expected": {"keyword": "workflow", "requires_knowledge": true},
+  "difficulty": "hard"
+}
