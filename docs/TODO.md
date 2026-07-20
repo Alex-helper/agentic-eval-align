@@ -1,0 +1,22 @@
+# TODO — SDD 单任务通关清单
+
+- [x] docs-foundation：产出 PRD/DESIGN/ARCHITECTURE/PIPELINE/LLM_STACK/IMPROVEMENTS/METRICS/DEPLOY
+  - 验收：文档先固化 LLM 全链路与范围黑名单。
+- [ ] skeleton：搭建 FastAPI + React + Docker Compose 骨架
+  - 验收：后端 health、前端页面、compose 配置存在。
+- [ ] data-and-graphrag：构建知识图谱、5 个样例、GraphRAG 索引脚本
+  - 验收：`data/knowledge_graph/`、`data/samples/`、`data/graphrag_index/` 可读取。
+- [ ] llm-and-mcp：实现 DeepSeek 客户端与 MCP Streamable HTTP 工具服务
+  - 验收：支持搜索和计算器工具 schema 调用。
+- [ ] multi-agent-memory：实现 Supervisor/Evaluator/Optimizer 与短期/长期记忆
+  - 验收：内置样例可生成轨迹。
+- [ ] error-dpo：实现错误分析器和 DPO 数据生成器
+  - 验收：失败轨迹可输出 ErrorReport 与 DPOPair。
+- [ ] eval-pipeline：实现 sample/upload 双通道评测与 `evals/METRICS.md`
+  - 验收：`python eval.py --mode sample` 成功。
+- [ ] frontend-sse：实现 SSE 三态 UI 与上传入口
+  - 验收：前端可看轨迹流和指标。
+- [ ] finetune：落地 QLoRA DPO 训练脚本与配置
+  - 验收：脚本可读取 DPO jsonl 并说明权重输出。
+- [ ] final-docs：README、LICENSE、STAR_NARRATIVE、公开仓与部署说明
+  - 验收：面试官可按 README 跑通。
