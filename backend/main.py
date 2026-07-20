@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -21,10 +22,12 @@ from backend.suite import run_suite_ab
 from pydantic import BaseModel, Field
 
 ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(ROOT / ".env", encoding="utf-8-sig")
+ENV_FILE = ROOT / ".env"
+load_dotenv(ENV_FILE, encoding="utf-8-sig")
 SAMPLES = ROOT / "data" / "samples"
+PROVIDERS_CATALOG = Path.home() / ".cursor" / "skills" / "global-api-env" / "providers.json"
 
-app = FastAPI(title="Agentic Eval Align", version="0.4.0")
+app = FastAPI(title="Agentic Eval Align", version="0.5.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -45,9 +48,88 @@ class ComplexTaskRequest(BaseModel):
     expected: dict = Field(default_factory=dict)
 
 
+class ConfigReq(BaseModel):
+    api_key: str
+    base_url: str = "https://api.deepseek.com/v1"
+    model: str = "deepseek-chat"
+    provider_id: str = "deepseek"
+    region: str = "cn"
+
+
+def _upsert_env(path: Path, updates: dict[str, str]) -> None:
+    text = path.read_text(encoding="utf-8-sig") if path.exists() else ""
+    lines = text.splitlines()
+    seen: set[str] = set()
+    out: list[str] = []
+    for line in lines:
+        raw = line.strip()
+        if not raw or raw.startswith("#") or "=" not in raw:
+            out.append(line)
+            continue
+        key = raw.split("=", 1)[0].strip().lstrip("\ufeff")
+        if key in updates:
+            if key not in seen:
+                out.append(f"{key}={updates[key]}")
+                seen.add(key)
+            continue
+        out.append(line)
+    for key, val in updates.items():
+        if key not in seen:
+            out.append(f"{key}={val}")
+    path.write_bytes(("\n".join(out).rstrip() + "\n").encode("utf-8"))
+
+
 def load_sample_tasks() -> list[Task]:
     return [Task(**json.loads(path.read_text(encoding="utf-8"))) for path in sorted(SAMPLES.glob("*.json"))]
 
+
+@app.get("/api/providers-catalog")
+async def providers_catalog() -> dict:
+    if not PROVIDERS_CATALOG.exists():
+        return {"error": "providers catalog missing", "providers": [], "regions": []}
+    return json.loads(PROVIDERS_CATALOG.read_text(encoding="utf-8"))
+
+
+@app.get("/api/config")
+async def get_config() -> dict:
+    load_dotenv(ENV_FILE, override=True, encoding="utf-8-sig")
+    key = os.getenv("OPENAI_API_KEY", "") or os.getenv("DEEPSEEK_API_KEY", "")
+    return {
+        "api_key": key,
+        "base_url": os.getenv("OPENAI_BASE_URL") or os.getenv("DEEPSEEK_BASE_URL") or "https://api.deepseek.com/v1",
+        "model": os.getenv("MODEL_NAME") or os.getenv("DEEPSEEK_MODEL") or "deepseek-chat",
+        "provider_id": os.getenv("API_PROVIDER_ID", "deepseek"),
+        "region": os.getenv("API_REGION", "cn"),
+        "configured": bool(key) and not key.startswith("sk-xxx"),
+        "writable": True,
+    }
+
+
+@app.post("/api/config")
+async def save_config(req: ConfigReq) -> dict:
+    _upsert_env(
+        ENV_FILE,
+        {
+            "API_PROVIDER_ID": (req.provider_id or "deepseek").strip(),
+            "API_REGION": (req.region or "cn").strip(),
+            "OPENAI_API_KEY": req.api_key.strip(),
+            "OPENAI_BASE_URL": (req.base_url or "https://api.deepseek.com/v1").strip(),
+            "MODEL_NAME": (req.model or "deepseek-chat").strip(),
+        },
+    )
+    load_dotenv(ENV_FILE, override=True, encoding="utf-8-sig")
+    os.environ["OPENAI_API_KEY"] = req.api_key.strip()
+    os.environ["OPENAI_BASE_URL"] = (req.base_url or "https://api.deepseek.com/v1").strip()
+    os.environ["MODEL_NAME"] = (req.model or "deepseek-chat").strip()
+    return {"ok": True}
+
+
+@app.get("/api/mcp/tools")
+async def mcp_tools() -> dict:
+    mcp = MCPClient()
+    health = await mcp.health()
+    listed = await mcp.list_tools()
+    return {"mcp": health, **listed}
 
 @app.get("/api/health")
 async def health() -> dict:

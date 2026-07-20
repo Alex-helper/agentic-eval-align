@@ -20,7 +20,7 @@ export function RunControls({
   onPreviewUpload,
 }: Props) {
   return (
-    <>
+    <div className="runControls">
       <div className="actions">
         <button className="cta" type="button" onClick={onRunSelected} disabled={loading || isPending}>
           运行选中案例
@@ -36,6 +36,6 @@ export function RunControls({
       <p className="formatHint">
         MCP: {mcpOk == null ? '检测中' : mcpOk ? 'HTTP 可用' : '将 fallback 本地工具'} · 支持 {formats.join(' ')}
       </p>
-    </>
+    </div>
   )
 }

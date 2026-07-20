@@ -4,8 +4,10 @@ import './styles.css'
 import { DpoCompare } from './components/DpoCompare'
 import { ErrorReportPanel } from './components/ErrorReportPanel'
 import { ExportButtons } from './components/ExportButtons'
+import { ExtraPanels } from './components/ExtraPanels'
 import { RunControls } from './components/RunControls'
 import { RunHistory } from './components/RunHistory'
+import { SettingsModal } from './components/SettingsModal'
 import { SuiteTable } from './components/SuiteTable'
 import { TraceTimeline } from './components/TraceTimeline'
 import type { Artifact, ChatMsg, Task, TraceEvent } from './types'
@@ -29,6 +31,9 @@ function App() {
   const [isPending, startTransition] = useTransition()
 
   const [assistantOpen, setAssistantOpen] = useState(true)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [view, setView] = useState<'console' | 'health' | 'metrics' | 'mcp' | 'complex' | 'formats'>('console')
+  const [railFocus, setRailFocus] = useState<'tasks' | 'trace' | 'suite' | 'agent' | 'health' | 'metrics' | 'mcp' | 'complex' | 'formats' | 'settings'>('tasks')
   const [chat, setChat] = useState<ChatMsg[]>([
     {
       role: 'assistant',
@@ -273,101 +278,199 @@ function App() {
     }
   }
 
-  return (
-    <main>
-      <section className="hero">
-        <div className="heroCopy">
-          <p className="eyebrow">Credible Eval Console</p>
-          <h1>TraceAlign Lab</h1>
-          <p className="lead">
-            可审计评测控制台：真实 MCP、实时 SSE、复杂多跳任务、可视化 Agent 助手对话，以及错误报告 / DPO 导出。
-          </p>
-          <RunControls
-            loading={status === 'loading'}
-            isPending={isPending}
-            mcpOk={mcpOk}
-            formats={formats}
-            accept={ACCEPT}
-            onRunSelected={() => runTask()}
-            onRunSuite={runSuite}
-            onPreviewUpload={previewUpload}
-          />
-        </div>
-        <div className="tracePlane" aria-label="pipeline">
-          <span>Complex Multi-hop</span>
-          <span>GraphRAG Local+Global</span>
-          <span>MCP HTTP Tools</span>
-          <span>Visual Agent Chat</span>
-          <span>ErrorReport + DPO</span>
-        </div>
-      </section>
+  const scrollTo = (id: string, focus: typeof railFocus) => {
+    setView('console')
+    setRailFocus(focus)
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
-      {preview && (
-        <section className="previewPanel">
-          <h2>上传预览（确认后才会评测）</h2>
-          <p className="muted">
-            解析到 {preview.tasks.length} 条任务；错误 {preview.errors.length} 个。
-          </p>
-          <ul>
-            {preview.tasks.map((t) => (
-              <li key={t.task_id}>
-                <strong>{t.task_id}</strong> [{t.source_format}] {(t.modalities || []).join(',')} — {t.instruction}
-              </li>
-            ))}
-          </ul>
-          {preview.errors.map((e, idx) => (
-            <p className="errorText" key={idx}>
-              {e.filename}: {e.error}
+  const switchView = (next: typeof view, focus: typeof railFocus) => {
+    setView(next)
+    setRailFocus(focus)
+  }
+
+  return (
+    <div className="shell">
+      <aside className="rail">
+        <div className="rail-brand">
+          <strong className="wordmark">TraceAlign</strong>
+          <span>Eval & Align Lab</span>
+        </div>
+        <nav className="rail-nav" aria-label="控制台导航">
+          <button type="button" className={view === 'console' && railFocus === 'tasks' ? 'active' : ''} onClick={() => scrollTo('panel-tasks', 'tasks')}>
+            评测控制台
+          </button>
+          <button type="button" className={view === 'console' && railFocus === 'trace' ? 'active' : ''} onClick={() => scrollTo('panel-trace', 'trace')}>
+            轨迹时间线
+          </button>
+          <button type="button" className={view === 'console' && railFocus === 'suite' ? 'active' : ''} onClick={() => scrollTo('panel-suite', 'suite')}>
+            Suite 指标
+          </button>
+          <button type="button" className={view === 'health' ? 'active' : ''} onClick={() => switchView('health', 'health')}>
+            系统健康
+          </button>
+          <button type="button" className={view === 'metrics' ? 'active' : ''} onClick={() => switchView('metrics', 'metrics')}>
+            指标看板
+          </button>
+          <button type="button" className={view === 'mcp' ? 'active' : ''} onClick={() => switchView('mcp', 'mcp')}>
+            MCP 工具
+          </button>
+          <button type="button" className={view === 'complex' ? 'active' : ''} onClick={() => switchView('complex', 'complex')}>
+            复杂任务
+          </button>
+          <button type="button" className={view === 'formats' ? 'active' : ''} onClick={() => switchView('formats', 'formats')}>
+            格式说明
+          </button>
+          <button
+            type="button"
+            className={railFocus === 'agent' ? 'active' : ''}
+            onClick={() => {
+              setRailFocus('agent')
+              setAssistantOpen(true)
+            }}
+          >
+            Agent 助手
+          </button>
+          <button
+            type="button"
+            className={railFocus === 'settings' ? 'active' : ''}
+            onClick={() => {
+              setRailFocus('settings')
+              setSettingsOpen(true)
+            }}
+          >
+            API 配置
+          </button>
+        </nav>
+        <div className="rail-meta">
+          <div className="chip-row" style={{ marginBottom: '0.65rem' }}>
+            <span className="chip" style={{ background: 'rgba(247,247,245,0.08)', borderColor: 'rgba(247,247,245,0.12)', color: 'rgba(247,247,245,0.7)' }}>
+              <span className={`status-dot ${mcpOk === true ? 'ok' : mcpOk === false ? 'bad' : ''}`} />
+              MCP {mcpOk == null ? '检测中' : mcpOk ? '可用' : '本地回退'}
+            </span>
+          </div>
+          可审计评测 · SSE · DPO 导出
+        </div>
+      </aside>
+
+      <div className="workspace">
+        <header className="workspace-header">
+          <div className="heroCopy">
+            <p className="eyebrow">Credible Eval Console</p>
+            <h1 style={{ margin: '0 0 0.35rem', fontFamily: 'var(--font-brand)', fontWeight: 400, fontSize: '1.75rem', letterSpacing: '-0.02em' }}>
+              TraceAlign Lab
+            </h1>
+            <p className="lead" style={{ margin: 0, maxWidth: '36rem' }}>
+              真实 MCP、实时 SSE、复杂多跳任务，以及错误报告 / DPO 导出。
             </p>
-          ))}
-          <div className="actions">
-            <button className="cta" type="button" onClick={confirmUpload}>
-              确认评测
-            </button>
+          </div>
+          <div className="runControls">
+            <RunControls
+              loading={status === 'loading'}
+              isPending={isPending}
+              mcpOk={mcpOk}
+              formats={formats}
+              accept={ACCEPT}
+              onRunSelected={() => runTask()}
+              onRunSuite={runSuite}
+              onPreviewUpload={previewUpload}
+            />
             <button
-              className="cta"
               type="button"
+              className="cta"
               onClick={() => {
-                setPreview(null)
-                setPendingFiles(null)
+                setRailFocus('settings')
+                setSettingsOpen(true)
               }}
             >
-              取消
+              API 配置
             </button>
           </div>
-        </section>
-      )}
+        </header>
 
-      <section className="console">
-        <div className="taskPicker">
-          <h2>内置任务</h2>
-          {tasks.map((task) => (
-            <button
-              className={selected?.task_id === task.task_id ? 'active' : ''}
-              key={task.task_id}
-              onClick={() => setSelected(task)}
-            >
-              <strong>
-                {task.task_id}
-                {task.difficulty === 'hard' ? ' · 复杂' : ''}
-              </strong>
-              <span>{task.instruction}</span>
-            </button>
+        <div className="chip-row" style={{ padding: '0.85rem 1.5rem 0' }} aria-label="pipeline">
+          {['Complex Multi-hop', 'GraphRAG', 'MCP HTTP', 'Agent Chat', 'ErrorReport + DPO'].map((label) => (
+            <span className="chip" key={label}>
+              {label}
+            </span>
           ))}
-          <RunHistory runs={runs} onOpen={openRun} />
         </div>
 
-        <div>
-          <TraceTimeline status={status} events={events} />
-          <ErrorReportPanel report={activeError} />
-          <DpoCompare pair={activeDpo} />
-        </div>
+        {view !== 'console' && (
+          <ExtraPanels view={view} formats={formats} mcpOk={mcpOk} onOpenSettings={() => setSettingsOpen(true)} />
+        )}
 
-        <div>
-          <SuiteTable runId={artifact?.run_id} metrics={artifact?.metrics} compares={artifact?.compares} />
-          <ExportButtons runId={artifact?.run_id} apiBase={API} onRerun={rerun} />
-        </div>
-      </section>
+        {view === 'console' && preview && (
+          <section className="previewPanel" style={{ margin: '1rem 1.5rem 0' }}>
+            <h2>上传预览（确认后才会评测）</h2>
+            <p className="muted">
+              解析到 {preview.tasks.length} 条任务；错误 {preview.errors.length} 个。
+            </p>
+            <ul>
+              {preview.tasks.map((t) => (
+                <li key={t.task_id}>
+                  <strong>{t.task_id}</strong> [{t.source_format}] {(t.modalities || []).join(',')} — {t.instruction}
+                </li>
+              ))}
+            </ul>
+            {preview.errors.map((e, idx) => (
+              <p className="errorText" key={idx}>
+                {e.filename}: {e.error}
+              </p>
+            ))}
+            <div className="actions">
+              <button className="cta" type="button" onClick={confirmUpload}>
+                确认评测
+              </button>
+              <button
+                className="cta"
+                type="button"
+                onClick={() => {
+                  setPreview(null)
+                  setPendingFiles(null)
+                }}
+              >
+                取消
+              </button>
+            </div>
+          </section>
+        )}
+
+        {view === 'console' && (
+        <section className="console">
+          <div className="taskPicker" id="panel-tasks">
+            <h2>内置任务</h2>
+            {tasks.map((task) => (
+              <button
+                className={selected?.task_id === task.task_id ? 'active' : ''}
+                key={task.task_id}
+                onClick={() => setSelected(task)}
+              >
+                <strong>
+                  {task.task_id}
+                  {task.difficulty === 'hard' ? ' · 复杂' : ''}
+                </strong>
+                <span>{task.instruction}</span>
+              </button>
+            ))}
+            <RunHistory runs={runs} onOpen={openRun} />
+          </div>
+
+          <div id="panel-trace">
+            <TraceTimeline status={status} events={events} />
+            <ErrorReportPanel report={activeError} />
+            <DpoCompare pair={activeDpo} />
+          </div>
+
+          <div id="panel-suite">
+            <SuiteTable runId={artifact?.run_id} metrics={artifact?.metrics} compares={artifact?.compares} />
+            <ExportButtons runId={artifact?.run_id} apiBase={API} onRerun={rerun} />
+          </div>
+        </section>
+        )}
+      </div>
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <button
         className={`agentFab ${assistantPulse ? 'pulse' : ''}`}
@@ -444,7 +547,7 @@ function App() {
           </form>
         </aside>
       )}
-    </main>
+    </div>
   )
 }
 
